@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CashierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StockInController;
 use App\Http\Controllers\WarehouseController;
+use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -31,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/barang-masuk/create', [StockInController::class, 'create'])->name('stock-ins.create');
     Route::post('/barang-masuk', [StockInController::class, 'store'])->name('stock-ins.store');
     Route::get('/barang-masuk/{stockIn}', [StockInController::class, 'show'])->name('stock-ins.show');
+    Route::get('/transaksi', [TransactionController::class, 'index'])->name('transactions.index');
 });
 
 
@@ -38,3 +41,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('products', ProductController::class)->except(['show']);
     Route::resource('warehouses', WarehouseController::class)->except(['show']);
 });
+
+
+

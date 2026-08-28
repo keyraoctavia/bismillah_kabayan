@@ -34,6 +34,12 @@
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('warehouses.*') ? 'active fw-bold' : '' }}" href="{{ route('warehouses.index') }}">Gudang</a>
                         </li>
+                        <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('transactions.*') ? 'active fw-bold' : '' }}" href="{{ route('transactions.index') }}">
+                            <i class="bi bi-receipt"></i> Riwayat Transaksi
+                        </a>
+                    </li>
+                        
                     @endif
                     @endauth
                 </ul>
