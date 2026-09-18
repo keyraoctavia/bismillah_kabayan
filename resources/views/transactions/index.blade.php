@@ -20,9 +20,12 @@
                 <tr>
                     <th>No. Invoice</th>
                     <th>Kasir</th>
-                    <th>Keterangan Item</th> 
+                    <th>Gudang</th>
+                    <th>Keterangan Item</th>
                     <th>Tanggal</th>
                     <th>Total</th>
+                    <th>Status</th>
+                    <th style="width:120px">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,8 +33,7 @@
                     <tr>
                         <td>{{ $trx->invoice_number }}</td>
                         <td>{{ $trx->user->name ?? 'Kasir tidak ditemukan' }}</td>
-                        
-                        
+                        <td>{{ $trx->warehouse->name ?? '-' }}</td>
                         <td>
                             <ul class="list-unstyled mb-0">
                                 @foreach($trx->details as $detail)
@@ -39,12 +41,25 @@
                                 @endforeach
                             </ul>
                         </td>
-                        
                         <td>{{ $trx->created_at->format('d M Y H:i') }}</td>
                         <td>Rp {{ number_format($trx->total_price, 0, ',', '.') }}</td>
+                        <td>
+                            <span class="badge {{ $trx->status === 'dibatalkan' ? 'bg-danger' : 'bg-success' }}">
+                                {{ ucfirst($trx->status) }}
+                            </span>
+                        </td>
+                        <td>
+                            @if($trx->status !== 'dibatalkan')
+                                <form action="{{ route('transactions.cancel', $trx) }}" method="POST"
+                                      onsubmit="return confirm('Batalkan transaksi ini? Stok akan dikembalikan.')">
+                                    @csrf
+                                    <button class="btn btn-sm btn-outline-danger">Batalkan</button>
+                                </form>
+                            @endif
+                        </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-muted">Belum ada transaksi</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">Belum ada transaksi</td></tr>
                 @endforelse
             </tbody>
         </table>

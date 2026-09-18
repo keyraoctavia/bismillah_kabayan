@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Stock;
 use App\Models\Transaction;
 use App\Models\TransactionDetail;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,31 +16,34 @@ class CashierController extends Controller
     public function index(Request $request)
     {
         $products = Product::query()
-        ->when($request->search, fn($query, $search)=> $query->where(function($query) use ($search){
-            $query->where('name','like',"%{$search}%")
-                  ->orWhere('code','like',"%{$search}%");
-        }))
-        ->orderBy('name')
-        ->get();
+            ->when($request->search, fn ($query, $search) => $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%");
+            }))
+            ->orderBy('name')
+            ->get();
 
-        return view('cashier.index', compact('products'));
+        $warehouses = Warehouse::orderBy('name')->get();
+
+        return view('cashier.index', compact('products', 'warehouses'));
     }
 
     public function checkout(Request $request)
     {
         $request->validate([
-            'qty'=>['required','array'],
-            'qty.*'=>['nullable','integer','min:0'],
-            'cash'=> ['required','integer','min:0'],
+            'warehouse_id' => ['required', 'exists:warehouses,id'],
+            'qty' => ['required', 'array'],
+            'qty.*' => ['nullable', 'integer', 'min:0'],
+            'cash' => ['required', 'integer', 'min:0'],
         ]);
 
-        $items= collect($request->qty)->filter(fn ($qty)=> (int) $qty >0);
+        $items = collect($request->qty)->filter(fn ($qty) => (int) $qty > 0);
 
-        if($items->isEmpty()) {
-            return back()->withInput()->with('error','Pilih minimal satu produk untuk transaksi');
+        if ($items->isEmpty()) {
+            return back()->withInput()->with('error', 'Pilih minimal satu produk untuk transaksi');
         }
 
-        $products =Product::whereIn('id',$items->keys())->get()->keyBy('id');
+        $products = Product::whereIn('id', $items->keys())->get()->keyBy('id');
 
         $totalPrice = 0;
         foreach ($items as $productId => $qty) {
@@ -48,8 +53,9 @@ class CashierController extends Controller
                 return back()->withInput()->with('error', 'Ada produk yang tidak ditemukan.');
             }
 
-            if ($qty > $product->stock) {
-                return back()->withInput()->with('error', "Stok {$product->name} tidak mencukupi (sisa {$product->stock}).");
+            $stokGudang = Stock::qtyOf($productId, $request->warehouse_id);
+            if ($qty > $stokGudang) {
+                return back()->withInput()->with('error', "Stok {$product->name} di gudang ini tidak mencukupi (sisa {$stokGudang}).");
             }
 
             $totalPrice += $product->price * $qty;
@@ -63,6 +69,7 @@ class CashierController extends Controller
             $trx = Transaction::create([
                 'invoice_number' => Transaction::generateInvoiceNumber(),
                 'user_id' => Auth::id(),
+                'warehouse_id' => $request->warehouse_id,
                 'total_price' => $totalPrice,
                 'cash' => $request->cash,
                 'change' => $request->cash - $totalPrice,
@@ -80,6 +87,7 @@ class CashierController extends Controller
                     'subtotal' => $product->price * $qty,
                 ]);
 
+                Stock::subtractQty($product->id, $request->warehouse_id, (int) $qty);
                 $product->decrement('stock', $qty);
 
                 $lines[] = [
@@ -103,5 +111,4 @@ class CashierController extends Controller
             ->with('success', 'Transaksi berhasil disimpan.')
             ->with('receipt', $receipt);
     }
-   
 }

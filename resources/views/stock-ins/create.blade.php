@@ -16,8 +16,8 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">Gudang (opsional)</label>
-                    <select name="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror">
+                    <label class="form-label">Gudang</label>
+                    <select name="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>
                         <option value="">-- Pilih Gudang --</option>
                         @foreach($warehouses as $warehouse)
                             <option value="{{ $warehouse->id }}" @selected(old('warehouse_id') == $warehouse->id)>
@@ -45,7 +45,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Barang</th>
-                        <th>Stok Saat Ini</th>
+                        <th>Stok Saat Ini (semua gudang)</th>
                         <th style="width:110px">Qty Masuk</th>
                         <th style="width:160px">Harga Beli / Unit</th>
                         <th class="text-end">Subtotal</th>

@@ -23,7 +23,7 @@ class ProfileController extends Controller
         $request->user()->fill($request->validated());
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('succes','profile-updated');
+        return Redirect::route('profile.edit')->with('success','Profil berhasil diperbarui.');
     }
 
     public function destroy(Request $request): RedirectResponse

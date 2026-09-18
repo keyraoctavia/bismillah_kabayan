@@ -16,6 +16,7 @@
         <table class="table table-hover align-middle">
             <thead class="table-light">
                 <tr>
+                    <th style="width:70px">Foto</th>
                     <th>SKU</th>
                     <th>Nama Barang</th>
                     <th>Kategori</th>
@@ -30,6 +31,20 @@
             <tbody>
                 @forelse($products as $product)
                     <tr>
+                        <td>
+                            @if($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}"
+                                     alt="{{ $product->name }}"
+                                     width="50" height="50"
+                                     class="rounded border"
+                                     style="object-fit: cover;">
+                            @else
+                                <div class="d-flex align-items-center justify-content-center bg-light border rounded text-muted"
+                                     style="width:50px; height:50px; font-size:10px;">
+                                    No Image
+                                </div>
+                            @endif
+                        </td>
                         <td>{{ $product->code }}</td>
                         <td>{{ $product->name }}</td>
                         <td>{{ $product->category ?? '-' }}</td>
@@ -55,7 +70,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="9" class="text-center text-muted">Belum ada barang</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted">Belum ada barang</td></tr>
                 @endforelse
             </tbody>
         </table>

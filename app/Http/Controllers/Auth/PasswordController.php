@@ -18,11 +18,10 @@ class PasswordController extends Controller
             'password'=>['required', Password::defaults(), 'confirmed'],
         ]);
 
-        $request->user->update([
-            'password'=>Hash::make($validated['pasword']),
+        $request->user()->update([
+            'password'=>Hash::make($validated['password']),
         ]);
 
-        return back()->with('status','password-updated');
+        return back()->with('success','Password berhasil diperbarui.');
     }
 }
-

@@ -14,7 +14,7 @@
 <body>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('cashier.index') }}">PT Sinar Nusantara</a>
+            <a class="navbar-brand" href="{{ route('dashboard') }}">PT Sinar Nusantara</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -22,10 +22,16 @@
                 <ul class="navbar-nav me-auto">
                     @auth
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active fw-bold' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('cashier.index') ? 'active fw-bold' : '' }}" href="{{ route('cashier.index') }}">Kasir</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('stock-ins.*') ? 'active fw-bold' : '' }}" href="{{ route('stock-ins.index') }}">Barang Masuk</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('stock-transfers.*') ? 'active fw-bold' : '' }}" href="{{ route('stock-transfers.index') }}">Transfer Gudang</a>
                     </li>
                     @if(auth()->user()->isAdmin())
                         <li class="nav-item">
@@ -35,11 +41,13 @@
                             <a class="nav-link {{ request()->routeIs('warehouses.*') ? 'active fw-bold' : '' }}" href="{{ route('warehouses.index') }}">Gudang</a>
                         </li>
                         <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('transactions.*') ? 'active fw-bold' : '' }}" href="{{ route('transactions.index') }}">
-                            <i class="bi bi-receipt"></i> Riwayat Transaksi
-                        </a>
-                    </li>
-                        
+                        <a class="nav-link {{ request()->routeIs('customers.*') ? 'active fw-bold' : '' }}" href="{{ route('customers.index') }}">Pelanggan</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('transactions.*') ? 'active fw-bold' : '' }}" href="{{ route('transactions.index') }}">
+                                <i class="bi bi-receipt"></i> Riwayat Transaksi
+                            </a>
+                        </li>
                     @endif
                     @endauth
                 </ul>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Stock;
 use App\Models\StockIn;
 use App\Models\StockInDetail;
 use App\Models\Warehouse;
@@ -35,7 +36,7 @@ class StockInController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'warehouse_id' => ['nullable', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'exists:warehouses,id'],
             'supplier' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:1000'],
             'qty' => ['required', 'array'],
@@ -94,6 +95,7 @@ class StockInController extends Controller
                 ]);
 
                 $product = $products->get($line['product_id']);
+                Stock::addQty($product->id, $stockIn->warehouse_id, $line['qty']);
                 $product->increment('stock', $line['qty']);
                 $product->update(['cost' => $line['cost']]);
             }
@@ -110,5 +112,38 @@ class StockInController extends Controller
         $stockIn->load(['user', 'warehouse', 'details.product']);
 
         return view('stock-ins.show', compact('stockIn'));
+    }
+
+    public function cancel(StockIn $stockIn)
+    {
+        if ($stockIn->status === 'dibatalkan') {
+            return back()->with('error', 'Barang masuk ini sudah dibatalkan sebelumnya.');
+        }
+
+        try {
+            DB::transaction(function () use ($stockIn) {
+                foreach ($stockIn->details as $detail) {
+                    $available = Stock::qtyOf($detail->product_id, $stockIn->warehouse_id);
+                    if ($detail->qty > $available) {
+                        throw new \RuntimeException("Stok {$detail->product->name} sudah berkurang (terjual/ditransfer), tidak bisa dibatalkan.");
+                    }
+                }
+
+                foreach ($stockIn->details as $detail) {
+                    Stock::subtractQty($detail->product_id, $stockIn->warehouse_id, $detail->qty);
+                    $detail->product->decrement('stock', $detail->qty);
+                }
+
+                $stockIn->update([
+                    'status' => 'dibatalkan',
+                    'canceled_by' => Auth::id(),
+                    'canceled_at' => now(),
+                ]);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', 'Transaksi barang masuk berhasil dibatalkan.');
     }
 }

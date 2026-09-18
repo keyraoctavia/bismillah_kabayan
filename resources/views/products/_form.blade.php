@@ -14,7 +14,7 @@
 <div class="row">
     <div class="col-md-6 mb-3">
         <label class="form-label">Kategori</label>
-        <input type="text" name="category" value="{{ old('category', $product->category ?? '') }}" class="form-control @error('category') is-invalid @enderror" placeholder="Contoh: Minuman, Makanan, Snack">
+        <input type="text" name="category" value="{{ old('category', $product->category ?? '') }}" class="form-control @error('category') is-invalid @enderror" placeholder="Contoh: Baju,Jaket,Dll">
         @error('category') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
     <div class="col-md-6 mb-3">

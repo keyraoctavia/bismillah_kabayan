@@ -2,23 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class StockIn extends Model
+class StockTransfer extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'reference_number', 'warehouse_id', 'user_id', 'supplier', 'total_cost', 'notes',
-        'status', 'canceled_by', 'canceled_at',
+        'reference_number', 'from_warehouse_id', 'to_warehouse_id',
+        'user_id', 'status', 'canceled_by', 'canceled_at', 'notes',
     ];
 
-    public function warehouse(): BelongsTo
+    public function fromWarehouse(): BelongsTo
     {
-        return $this->belongsTo(Warehouse::class);
+        return $this->belongsTo(Warehouse::class, 'from_warehouse_id');
+    }
+
+    public function toWarehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class, 'to_warehouse_id');
     }
 
     public function user(): BelongsTo
@@ -28,12 +30,12 @@ class StockIn extends Model
 
     public function details(): HasMany
     {
-        return $this->hasMany(StockInDetail::class);
+        return $this->hasMany(StockTransferDetail::class);
     }
 
     public static function generateReferenceNumber(): string
     {
-        $prefix = 'BM-' . now()->format('Ymd') . '-';
+        $prefix = 'TR-' . now()->format('Ymd') . '-';
         $last = self::where('reference_number', 'like', $prefix . '%')
             ->orderByDesc('id')
             ->first();

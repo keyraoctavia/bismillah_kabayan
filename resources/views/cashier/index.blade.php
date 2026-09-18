@@ -54,13 +54,30 @@
     @csrf
 
     <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <label class="form-label fw-bold">Gudang Penjualan</label>
+            <select name="warehouse_id" class="form-select @error('warehouse_id') is-invalid @enderror" required>
+                <option value="">-- Pilih Gudang --</option>
+                @foreach($warehouses as $warehouse)
+                    <option value="{{ $warehouse->id }}" @selected(old('warehouse_id') == $warehouse->id)>
+                        {{ $warehouse->name }} ({{ $warehouse->code }})
+                    </option>
+                @endforeach
+            </select>
+            @error('warehouse_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <small class="text-muted">Stok akan dikurangi dari gudang yang dipilih di sini.</small>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
         <div class="card-body p-0">
             <table class="table mb-0 align-middle">
                 <thead class="table-light">
                     <tr>
+                        <th style="width:60px">Foto</th>
                         <th>Produk</th>
                         <th>Harga</th>
-                        <th>Stok</th>
+                        <th>Stok (semua gudang)</th>
                         <th style="width:110px">Qty</th>
                         <th class="text-end">Subtotal</th>
                     </tr>
@@ -68,6 +85,20 @@
                 <tbody>
                     @forelse($products as $product)
                         <tr>
+                            <td>
+                                @if($product->image)
+                                    <img src="{{ asset('storage/' . $product->image) }}"
+                                         alt="{{ $product->name }}"
+                                         width="40" height="40"
+                                         class="rounded border"
+                                         style="object-fit: cover;">
+                                @else
+                                    <div class="d-flex align-items-center justify-content-center bg-light border rounded text-muted"
+                                         style="width:40px; height:40px; font-size:9px;">
+                                        N/A
+                                    </div>
+                                @endif
+                            </td>
                             <td>
                                 {{ $product->name }}
                                 <br><small class="text-muted">{{ $product->code }}</small>
@@ -83,7 +114,6 @@
                                     type="number"
                                     name="qty[{{ $product->id }}]"
                                     min="0"
-                                    max="{{ $product->stock }}"
                                     value="{{ old('qty.'.$product->id, 0) }}"
                                     class="form-control form-control-sm qty-input"
                                     data-price="{{ $product->price }}"
@@ -95,7 +125,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">Produk tidak ditemukan.</td>
+                            <td colspan="6" class="text-center text-muted py-4">Produk tidak ditemukan.</td>
                         </tr>
                     @endforelse
                 </tbody>

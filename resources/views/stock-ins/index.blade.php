@@ -22,7 +22,8 @@
                     <th>Supplier</th>
                     <th>Diinput oleh</th>
                     <th class="text-end">Total</th>
-                    <th style="width:100px">Aksi</th>
+                    <th>Status</th>
+                    <th style="width:150px">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,11 +36,23 @@
                         <td>{{ $stockIn->user->name ?? '-' }}</td>
                         <td class="text-end">Rp {{ number_format($stockIn->total_cost, 0, ',', '.') }}</td>
                         <td>
+                            <span class="badge {{ $stockIn->status === 'dibatalkan' ? 'bg-danger' : 'bg-success' }}">
+                                {{ ucfirst($stockIn->status) }}
+                            </span>
+                        </td>
+                        <td>
                             <a href="{{ route('stock-ins.show', $stockIn) }}" class="btn btn-sm btn-outline-primary">Detail</a>
+                            @if($stockIn->status !== 'dibatalkan' && auth()->user()->isAdmin())
+                                <form action="{{ route('stock-ins.cancel', $stockIn) }}" method="POST" class="d-inline"
+                                      onsubmit="return confirm('Batalkan transaksi barang masuk ini? Stok akan dikurangi kembali.')">
+                                    @csrf
+                                    <button class="btn btn-sm btn-outline-danger">Batalkan</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-center text-muted">Belum ada transaksi barang masuk</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted">Belum ada transaksi barang masuk</td></tr>
                 @endforelse
             </tbody>
         </table>
